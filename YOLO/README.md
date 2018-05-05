@@ -4,4 +4,6 @@ Before any usage, download yolo.h5 file here：https://pan.baidu.com/s/1CxVbByAQ
 ### To make ground truth on RAP-dataset:
   python RAP_ground_truth.py --input_path <RAP-dataset's ground truth csv file path>
 ### To detect pedestrians on a dataset: 
-  python detect_pedestrian.py --image_dir <dataset's image dir>  --gt_csv <ground truth csv filename, e.g. rap_ground_truth.csv>  --result_csv <output result csv filename, e.g. rep_result.csv>
+  python detect_pedestrian.py --image_dir <dataset's image dir> ----pred_csv <prediction output csv filename, e.g. rep_prediction.csv>
+### To evaluate mAP:
+  python evaluate --gt_csv <ground truth csv filename, e.g. rap_ground_truth.csv>  --pred_csv <prediction csv filename, e.g. rep_prediction.csv> --draw_plot <draw result plots or not, e.g. True>
