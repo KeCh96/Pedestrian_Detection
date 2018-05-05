@@ -6,4 +6,4 @@ Before any usage, download yolo.h5 file here：https://pan.baidu.com/s/1CxVbByAQ
 ### To detect pedestrians on a dataset: 
   python detect_pedestrian.py --image_dir <dataset's image dir> ----pred_csv <prediction output csv filename, e.g. rep_prediction.csv>
 ### To evaluate mAP:
-  python evaluate --gt_csv <ground truth csv filename, e.g. rap_ground_truth.csv>  --pred_csv <prediction csv filename, e.g. rep_prediction.csv> --draw_plot <draw result plots or not, e.g. True>
+  python evaluate --gt_csv <ground truth csv filename, e.g. rap_ground_truth.csv>  --pred_csv <prediction csv filename, e.g. rap_prediction.csv> --draw_plot <draw result plots or not, e.g. True>
