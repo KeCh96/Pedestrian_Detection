@@ -3,8 +3,10 @@ Before any usage, download yolo.h5 file here：https://pan.baidu.com/s/1CxVbByAQ
 # Usage:
 ### To make ground truth on a dataset:
   cd ./evaluate/extra/ \
-  RAP ground truth:		python RAP_ground_truth.py --input_path <RAP-dataset's ground truth csv file path>/
-  INRIA ground truth:	python INRIA_ground_truth.py --input_dir <INRIA-dataset's annotation directory>
+  ##### RAP ground truth:		
+  python RAP_ground_truth.py --input_path <RAP-dataset's ground truth csv file path> \
+  ##### INRIA ground truth:	
+  python INRIA_ground_truth.py --input_dir <INRIA-dataset's annotation directory>
 ### To detect pedestrians on a dataset: 
   python detect_pedestrian.py --image_dir <dataset's image dir> --pred_csv <prediction output csv filename, e.g. rep_prediction.csv>
 ### To evaluate mAP:
