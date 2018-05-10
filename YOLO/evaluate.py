@@ -4,7 +4,7 @@ from mAP import eval_mAP
 
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0,1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 result_dir = './evaluate/result_evaluate/'
 pred_dir = './evaluate/predicted/'
 gt_dir = './evaluate/ground_truth/'

@@ -19,10 +19,7 @@ import shutil
 
 
 def compose(*funcs):
-    """Compose arbitrarily many functions, evaluated left to right.
-
-    Reference: https://mathieularose.com/function-composition-in-python/
-    """
+    # Compose arbitrarily many functions, evaluated left to right.
     # return lambda x: reduce(lambda v, f: f(v), funcs, x)
     if funcs:
         return reduce(lambda f, g: lambda *a, **kw: g(f(*a, **kw)), funcs)
@@ -30,7 +27,7 @@ def compose(*funcs):
         raise ValueError('Composition of empty sequence not supported.')
 
 def letterbox_image(image, size):
-    '''resize image with unchanged aspect ratio using padding'''
+    # resize image with unchanged aspect ratio using padding
     image_w, image_h = image.size
     w, h = size
     new_w = int(image_w * min(w/image_w, h/image_h))
@@ -43,14 +40,14 @@ def letterbox_image(image, size):
 
 @wraps(Conv2D)
 def DarknetConv2D(*args, **kwargs):
-    """Wrapper to set Darknet parameters for Convolution2D."""
+    # Wrapper to set Darknet parameters for Convolution2D
     darknet_conv_kwargs = {'kernel_regularizer': l2(5e-4)}
     darknet_conv_kwargs['padding'] = 'valid' if kwargs.get('strides')==(2,2) else 'same'
     darknet_conv_kwargs.update(kwargs)
     return Conv2D(*args, **darknet_conv_kwargs)
 
 def DarknetConv2D_BN_Leaky(*args, **kwargs):
-    """Darknet Convolution2D followed by BatchNormalization and LeakyReLU."""
+    # Darknet Convolution2D followed by BatchNormalization and LeakyReLU
     no_bias_kwargs = {'use_bias': False}
     no_bias_kwargs.update(kwargs)
     return compose(
@@ -59,7 +56,7 @@ def DarknetConv2D_BN_Leaky(*args, **kwargs):
         LeakyReLU(alpha=0.1))
 
 def resblock_body(x, num_filters, num_blocks):
-    '''A series of resblocks starting with a downsampling Convolution2D'''
+    # A series of resblocks starting with a downsampling Convolution2D
     # Darknet uses left and top padding instead of 'same' mode
     x = ZeroPadding2D(((1,0),(1,0)))(x)
     x = DarknetConv2D_BN_Leaky(num_filters, (3,3), strides=(2,2))(x)
@@ -71,7 +68,7 @@ def resblock_body(x, num_filters, num_blocks):
     return x
 
 def darknet_body(x):
-    '''Darknent body having 52 Convolution2D layers'''
+    # Darknent body having 52 Convolution2D layers
     x = DarknetConv2D_BN_Leaky(32, (3,3))(x)
     x = resblock_body(x, 64, 1)
     x = resblock_body(x, 128, 2)
@@ -81,7 +78,7 @@ def darknet_body(x):
     return x
 
 def make_last_layers(x, num_filters, out_filters):
-    '''6 Conv2D_BN_Leaky layers followed by a Conv2D_linear layer'''
+    # 6 Conv2D_BN_Leaky layers followed by a Conv2D_linear layer
     x = compose(
             DarknetConv2D_BN_Leaky(num_filters, (1,1)),
             DarknetConv2D_BN_Leaky(num_filters*2, (3,3)),
@@ -95,7 +92,7 @@ def make_last_layers(x, num_filters, out_filters):
 
 
 def yolo_body(inputs, num_anchors, num_classes):
-    """Create YOLO_V3 model CNN body in Keras."""
+    # Create YOLO_V3 model CNN body in Keras
     darknet = Model(inputs, darknet_body(inputs))
     x, y1 = make_last_layers(darknet.output, 512, num_anchors*(num_classes+5))
 
@@ -115,7 +112,7 @@ def yolo_body(inputs, num_anchors, num_classes):
 
 
 def yolo_head(feats, anchors, num_classes, input_shape):
-    """Convert final layer features to bounding box parameters."""
+    # Convert final layer features to bounding box parameters
     num_anchors = len(anchors)
     # Reshape to batch, height, width, num_anchors, box_params.
     anchors_tensor = K.reshape(K.constant(anchors), [1, 1, 1, num_anchors, 2])
@@ -144,7 +141,7 @@ def yolo_head(feats, anchors, num_classes, input_shape):
 
 
 def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape):
-    '''Get corrected boxes'''
+    # Get corrected boxes
     box_yx = box_xy[..., ::-1]
     box_hw = box_wh[..., ::-1]
     input_shape = K.cast(input_shape, K.dtype(box_yx))
@@ -170,7 +167,7 @@ def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape):
 
 
 def yolo_boxes_and_scores(feats, anchors, num_classes, input_shape, image_shape):
-    '''Process Conv layer output'''
+    # Process Conv layer output
     box_xy, box_wh, box_confidence, box_class_probs = yolo_head(feats,
         anchors, num_classes, input_shape)
     boxes = yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape)
@@ -187,7 +184,7 @@ def yolo_eval(yolo_outputs,
               max_boxes=20,
               score_threshold=.6,
               iou_threshold=.5):
-    """Evaluate YOLO model on given input and return filtered boxes."""
+    # Evaluate YOLO model on given input and return filtered boxes
     anchor_mask = [[6,7,8], [3,4,5], [0,1,2]]
     input_shape = K.shape(yolo_outputs[0])[1:3] * 32
     boxes = []
@@ -224,7 +221,8 @@ def yolo_eval(yolo_outputs,
 
 
 def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
-    '''Preprocess true boxes to training input format
+    '''
+    Preprocess true boxes to training input format
 
     Parameters
     ----------
@@ -237,7 +235,6 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
     Returns
     -------
     y_true: list of array, shape like yolo_outputs, xywh are reletive value
-
     '''
     anchor_mask = [[6,7,8], [3,4,5], [0,1,2]]
 
@@ -294,7 +291,8 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
 
 
 def box_iou(b1, b2):
-    '''Return iou tensor
+    '''
+    Return iou tensor
 
     Parameters
     ----------
@@ -335,7 +333,8 @@ def box_iou(b1, b2):
 
 
 def yolo_loss(args, anchors, num_classes, ignore_thresh=.5):
-    '''Return yolo_loss tensor
+    '''
+    Return yolo_loss tensor
 
     Parameters
     ----------
@@ -515,7 +514,7 @@ class YOLO(object):
     def close_session(self):
         self.sess.close()
 
-    def detect_on_set(self, image_paths_list, output_csv_name, object='all', save_animation=False):
+    def detect_on_set(self, image_paths_list, output_csv_name, conf_threshold = 0.95, object='all', save_animation=False):
         classes_path = ['./cfg/coco_classes.txt', './cfg/voc_classes.txt']
         all_classes = ['all']
         for path in classes_path:
@@ -561,6 +560,7 @@ class YOLO(object):
                 if not object == 'all':
                     if not predicted_class == object: continue
                 score = out_scores[i]
+                if not score > conf_threshold: continue
 
                 top, left, bottom, right  = out_boxes[i]
                 top = max(0, np.floor(top).astype('int32'))

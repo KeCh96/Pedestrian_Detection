@@ -5,7 +5,7 @@ import argparse
 
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0,1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 result_dir = './evaluate/result_evaluate/'
 pred_dir = './evaluate/predicted/'
 gt_dir = './evaluate/ground_truth/'
@@ -22,5 +22,10 @@ if __name__ == '__main__':
     print('Find {} images.'.format(len(image_paths_list)))
 
     yolo = YOLO()
-    yolo.detect_on_set(image_paths_list = image_paths_list, output_csv_name = args.pred_csv, object='person', save_animation=True)
+    yolo.detect_on_set(
+        image_paths_list = image_paths_list,
+        output_csv_name = args.pred_csv,
+        conf_threshold = 0.99,
+        object='person',
+        save_animation=True)
     yolo.close_session()
